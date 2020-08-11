@@ -5,7 +5,8 @@
 ### Environments  
 Python3 + Paddle Fluid 1.5 (please confirm your Python path in scripts).  
 Dependencies are listed in `./requirements.txt`
-<br>Or execute the following command to install: 
+
+Or execute the following command to install: 
 <br>GPU版本 `pip install paddlepaddle==1.5.2 -i https://mirror.baidu.com/pypi/simple`
 <br>CPU版本 `pip install paddlepaddle-gpu==1.5.2.post107 -i https://mirror.baidu.com/pypi/simple`
 
@@ -26,6 +27,7 @@ We crawled about 4,000 military reports from Sina.com and Sohu.com of the past m
 |研发|巴基斯坦|国家|JF-17B战斗机|武器|
 |配备|黑豹中队|部队|JF-17B战斗机|武器|	
 
+run`python get_corpus.py`to get un-tagged corpus.
 ### Training  
 ```
 sh ./script/train.sh
@@ -43,10 +45,10 @@ Specify your checkpoints dir in the prediction script, and then run:
 sh ./script/predict.sh
 ```
 This will write the predictions into a json file with the same format as the original dataset.The final prediction file is saved into `./data/`
-And run:`python generate_json.py`to generate json file for demonstration.
+<br>And run:`python generate_json.py`to generate json file for demonstration.
 
 ### Get structured-data corpus
-A simple web-crawler, getting existing knowledge form [中华网](https://www.china.com/), run:`python get_structured_data.py`
+Gett existing knowledge form [中华网](https://www.china.com/), run:`python get_structured_data.py`
 
 ### Visualization demonstration
 ...
