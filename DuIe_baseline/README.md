@@ -39,14 +39,6 @@ export LD_LIBRARY_PATH=/your/custom/path:$LD_LIBRARY_PATH
 ```
 **Accuracy** (token-level and example-level) is printed during the during the training procedure.
 
-### Prediction  
-Specify your checkpoints dir in the prediction script, and then run:
-```
-sh ./script/predict.sh
-```
-This will write the predictions into a json file with the same format as the original dataset.The final prediction file is saved into `./data/`
-<br>And run:`python generate_json.py`to generate json file for demonstration.
-
 ### Get structured-data corpus
 Gett existing knowledge form [中华网](https://www.china.com/), run:`python get_structured_data.py`
 

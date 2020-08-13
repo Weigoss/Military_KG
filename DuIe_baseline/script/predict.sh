@@ -9,11 +9,11 @@ export TEST_SAVE=./data/
 export FLAGS_sync_nccl_allreduce=1
 export PYTHONPATH=./ernie:${PYTHONPATH:-}
 python -u ./ernie/run_duie.py \
-                   --use_cuda true \
+                   --use_cuda false \
                    --do_train false \
                    --do_val false \
                    --do_test true \
-                   --batch_size 8 \
+                   --batch_size 64 \
                    --init_checkpoint ${CHECKPOINT} \
                    --num_labels 8 \
                    --label_map_config ${TASK_DATA_PATH}relation2label.json \

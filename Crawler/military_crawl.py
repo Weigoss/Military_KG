@@ -1,7 +1,6 @@
 from bs4 import BeautifulSoup
 import re
 import time
-import multiprocessing as mp
 import json
 import requests
 import csv
@@ -11,18 +10,33 @@ headers = {
     'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36'
 }
 
+website_list = ['sina', 'sohu']
+category_list = ['china', 'international', 'weapon', 'national_defence', 'univerasl']
+
 
 class sina_crawler(object):
     """
     爬取新浪网军事报道文章
     """
 
-    def __init__(self, url, page, path):
+    def __init__(self, path, type=['sina', 'china']):
         # 储存页面url
         self.page_list = []
         # 储存文章url
         self.link_list = []
         self.path = path
+        self.type = type
+        if type[0] not in website_list or type[1] not in category_list:
+            raise ValueError
+        if type[0] == 'sina':
+            if type[1] == 'china':
+                url = 'http://mil.news.sina.com.cn/roll/index.d.html?cid=57918&page={}'
+                page = 25
+            elif type[1] == 'international':
+                url = 'http://mil.news.sina.com.cn/roll/index.d.html?cid=57919&page={}'
+                page = 24
+            else:
+                raise ValueError
         for i in range(1, page + 1):
             self.page_list.append(url.format(i))
 
@@ -35,12 +49,57 @@ class sina_crawler(object):
             for linkNews in html.find_all('ul', class_="linkNews", style=False):
                 # 文章发布时间
                 date = linkNews.find('span').text
-                date = date.strip('(').strip(')')
+                date = date.strip('(').strip(')').strip()
+                # day_pattern = re.compile(r'\b\d{1,2}月\d{1,2}日\b')
+                year = time.strftime("%Y")
+                date = year + '-' + date.replace('月', '-').replace('日', '')
+
                 for link in linkNews.find_all('a', target="_blank"):
                     title = link.text
                     # 文章链接
                     href = link.get('href')
                     self.link_list.append([title, date, href])
+
+    def get_update_link_list(self):
+        # 获取语料的更新时间
+        with open('update_config.json', 'r', encoding='utf-8') as f:
+            update_config = json.load(f)
+            website = self.type[0]
+            categoty = self.type[1]
+            update_time = update_config[website][categoty]
+        newest_time = set()
+        # 获取更新文章链接
+        end_condition = 0  # 默认为已搜索完所有文章
+        for url in self.page_list:
+            if end_condition:
+                # 已搜完最新文章
+                break
+            response = requests.get(url=url, headers=headers)
+            response.encoding = 'UTF-8'
+            html = BeautifulSoup(response.text, "html.parser")
+            for linkNews in html.find_all('ul', class_="linkNews", style=False):
+                # 文章发布时间
+                date = linkNews.find('span').text
+                date = date.strip('(').strip(')').strip()
+                year = time.strftime("%Y")
+                date = year + '-' + date.replace('月', '-').replace('日', '')
+                newest_time.update([date])
+
+                if date <= update_time:
+                    # 文章已在库中，结束本次更新
+                    end_condition = 1
+                    break
+
+                for link in linkNews.find_all('a', target="_blank"):
+                    title = link.text
+                    # 文章链接
+                    href = link.get('href')
+                    self.link_list.append([title, date, href])
+
+        # 更新config最新时间
+        with open('update_config.json', 'w', encoding='utf-8') as f:
+            update_config[website][categoty] = list(newest_time)[-1]
+            json.dump(update_config, f, ensure_ascii=False, indent=4)
 
     def get_text(self):
         # 获取文章内容并储存
@@ -202,5 +261,3 @@ class china_crawler(object):
                     json.dump(new_dic, f_w, ensure_ascii=False)
                     f_w.write('\n')
                     i += 1
-
-
